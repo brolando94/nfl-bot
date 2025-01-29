@@ -46,7 +46,9 @@ team_mapping = {
     'bears': '<:bears:1316594589422850080>',
     'vikings': '<:vikings:1316594565834215516>',
     'falcons': '<:falcons:1316594596326674472>',
-    'raiders': '<:raiders:1316594571798384660>'
+    'raiders': '<:raiders:1316594571798384660>',
+    'afc': '<:afc:1333956053808844872> ',
+    'nfc': '<:nfc:1333956016982851584>'
 }
 
 # environment variables
@@ -128,7 +130,7 @@ if len(game_dict) > 0:
 game_days = game_dict.keys()
 for game_day in game_days:
     # send the message for the date
-    # print(operations.send(message=f"# {game_day}", webhook_url=webhook_url))
+    print(operations.send(message=f"# {game_day}", webhook_url=webhook_url))
     sleep(1)
     # loop the game data and build the message
     for game in game_dict[game_day]:

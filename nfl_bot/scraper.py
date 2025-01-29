@@ -19,7 +19,12 @@ def parse_game_details(driver):
         games = game_day.find_elements(By.XPATH, "./div/section")
         for game in games:
             game_time = game.find_element(By.XPATH, ".//div[@class='ScoreCell__Time ScoreboardScoreCell__Time h9 clr-gray-03']").text
-            channel = game.find_element(By.XPATH, ".//div[@class='ScoreCell__NetworkItem']").text
+            channels = game.find_elements(By.XPATH, ".//div[@class='ScoreCell__NetworkItem']")
+            channel_list = []
+            for channel_elem in channels:
+                channel_list.append(channel_elem.text.strip())
+            channel = ', '.join(channel_list)
+
             teams = game.find_elements(By.XPATH, ".//div[@class='ScoreCell__TeamName ScoreCell__TeamName--shortDisplayName db']")
             home_team = teams[1].text
             away_team = teams[0].text
