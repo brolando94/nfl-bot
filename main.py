@@ -6,6 +6,7 @@ from time import sleep
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from seleniumrequests import Firefox
+import json
 
 options = Options()
 options.set_preference("browser.download.panel.shown", False)
@@ -96,13 +97,15 @@ elif current_week == '19' and current_season == '2':
     current_week = '1'
     set_key(r'vars.env', 'week', '1')
 
-
 # request the page
 url = f'https://www.espn.com/nfl/scoreboard/_/week/{current_week}/year/{current_year}/seasontype/{current_season}'
 driver.get(url=url)
 sleep(3)
 # parse the game data
 game_dict = scraper.parse_game_details(driver)
+
+# initialize message dict for file write later
+message_dict = {}
 
 # translate the season number and week into the staring message
 match current_season:
@@ -138,6 +141,7 @@ for game_day in game_days:
         home_emoji = team_mapping[home.lower()]
         away = game['away_team']
         away_emoji = team_mapping[away.lower()]
+        game_id = game['game_id']
         # convert date and time to unix timestamp
         date_to_convert = f"{game_day} {game['game_time']}"
         # Parse the date string into a datetime object
@@ -149,13 +153,27 @@ for game_day in game_days:
                    f"\nChannel: {game['channel']}"
 
         # send message
-        print(operations.send(message=game_msg, webhook_url=webhook_url))
+        response = operations.send(message=game_msg, webhook_url=webhook_url)
+        # get message id from response
+        message_id = json.loads(response)['id']
+        # add the message id and the inital message to the dict using the game id as the key
+        message_dict[game_id] = {
+            'message_id': message_id,
+            'message': game_msg,
+            'game_time': game_timestamp,
+            'game_finished': 0}
         sleep(1)
 
 driver.close()
+# write the message dict to a file for later
+with open(f"data/week_{current_week}.json", 'w') as f:
+    json.dump(message_dict, f, indent=4)
 
 # need to end the game and set it up for next year
+"""
+need to find fix. this will cause the score updater to misfire
 if current_season == '3' and current_week == '5':
     set_key(r'vars.env', 'year', f'{int(current_year) + 1}')
     set_key(r'vars.env', 'week', '2')
     set_key(r'vars.env', 'season', '1')
+"""

@@ -8,7 +8,13 @@ class Game(TypedDict):
     home_team: str
     channel: str
     away_team: str
+    game_id: str
 
+class GameScore(TypedDict):
+    game_id: str
+    home_score: str
+    away_score: str
+    game_finished: int
 
 def parse_game_details(driver):
     game_days = driver.find_elements(By.XPATH, "//section[@class='Card gameModules']")
@@ -18,6 +24,7 @@ def parse_game_details(driver):
         game_date = game_day.find_element(By.XPATH, ".//header").text
         games = game_day.find_elements(By.XPATH, "./div/section")
         for game in games:
+            game_id = game.get_attribute("id")
             game_time = game.find_element(By.XPATH, ".//div[@class='ScoreCell__Time ScoreboardScoreCell__Time h9 clr-gray-03']").text
             channels = game.find_elements(By.XPATH, ".//div[@class='ScoreCell__NetworkItem']")
             channel_list = []
@@ -30,9 +37,36 @@ def parse_game_details(driver):
             away_team = teams[0].text
 
             game_list.append(Game(game_date=game_date, game_time=game_time, home_team=home_team,
-                                  away_team=away_team, channel=channel))
+                                  away_team=away_team, channel=channel, game_id=game_id))
 
         game_dict[game_date] = game_list
     return game_dict
 
 
+def parse_game_scores(driver):
+    game_scores = []
+    games = driver.find_elements(By.XPATH, "//section[@class='Card gameModules']/div/section")
+    for game in games:
+        game_finished = 0
+        game_id = game.get_attribute("id")
+        game_time_left = game.find_element(By.XPATH, ".//div[contains(@class, 'ScoreboardScoreCell__Time')]").text
+        if 'FINAL' in game_time_left:
+            game_finished = 1
+        scores = game.find_elements(By.XPATH, ".//li//div[contains(@class, 'ScoreboardScoreCell__Value')]")
+        total_amount = int(len(scores))
+        if total_amount == 0:
+            game_scores.append(GameScore(game_id=game_id, home_score='0', away_score='0', game_finished=0))
+        else:
+            split = int(total_amount/2)
+            home_score = 0
+            away_score = 0
+            # away score is first half
+            for i in range(split):
+                away_score += int(scores[i].text)
+            for i in range(split, total_amount):
+                home_score += int(scores[i].text)
+
+            game_scores.append(GameScore(game_id=game_id, home_score=str(home_score), away_score=str(away_score),
+                                         game_finished=game_finished))
+
+    return game_scores
