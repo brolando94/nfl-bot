@@ -15,6 +15,8 @@ class GameScore(TypedDict):
     home_score: str
     away_score: str
     game_finished: int
+    game_time_left: str
+
 
 def parse_game_details(driver):
     game_days = driver.find_elements(By.XPATH, "//section[@class='Card gameModules']")
@@ -55,18 +57,25 @@ def parse_game_scores(driver):
         scores = game.find_elements(By.XPATH, ".//li//div[contains(@class, 'ScoreboardScoreCell__Value')]")
         total_amount = int(len(scores))
         if total_amount == 0:
-            game_scores.append(GameScore(game_id=game_id, home_score='0', away_score='0', game_finished=0))
+            game_scores.append(GameScore(game_id=game_id, home_score='0', away_score='0',
+                                         game_finished=0, game_time_left=game_time_left))
         else:
             split = int(total_amount/2)
             home_score = 0
             away_score = 0
             # away score is first half
             for i in range(split):
-                away_score += int(scores[i].text)
+                try:
+                    away_score += int(scores[i].text)
+                except ValueError:
+                    pass
             for i in range(split, total_amount):
-                home_score += int(scores[i].text)
+                try:
+                    home_score += int(scores[i].text)
+                except ValueError:
+                    pass
 
             game_scores.append(GameScore(game_id=game_id, home_score=str(home_score), away_score=str(away_score),
-                                         game_finished=game_finished))
+                                         game_finished=game_finished, game_time_left=game_time_left))
 
     return game_scores

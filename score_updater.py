@@ -54,6 +54,7 @@ if len(games_playing) > 0:
             home_score = game_score['home_score']
             away_score = game_score['away_score']
             game_finished = int(game_score['game_finished'])
+            game_time_left = game_score['game_time_left']
 
             # update game finished
             message_data[game_id]['game_finished'] = game_finished
@@ -61,7 +62,10 @@ if len(games_playing) > 0:
             # original message data to update message
             original_message = message_data[game_id]['message']
             original_message_id = message_data[game_id]['message_id']
+            original_game_time = message_data[game_id]['game_time']
+            # update message
             updated_message = original_message.replace('@', f'{away_score} @ {home_score}')
+            updated_message = updated_message.replace(f'<t:{original_game_time}:t>', game_time_left)
             message_webhook = webhook_url.replace('?wait=true', '')
             message_webhook += f"/messages/{original_message_id}"
 
