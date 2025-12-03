@@ -3,17 +3,13 @@ from dotenv import load_dotenv, set_key
 from os import environ as env
 from nfl_bot import scraper, operations
 from time import sleep
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
-from seleniumrequests import Firefox
+from selenium import webdriver
 import json
 
-options = Options()
-options.set_preference("browser.download.panel.shown", False)
+options = webdriver.FirefoxOptions()
+options.add_argument("--headless")
 options.binary_location = r'C:\Program Files\Mozilla Firefox\firefox.exe'
-options.headless = False
-driver = Firefox()
-driver.set_window_size(1920, 1080)
+driver = webdriver.Firefox(options=options)
 
 team_mapping = {
     'rams': '<:rams:1316594568690536500>',

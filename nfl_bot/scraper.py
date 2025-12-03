@@ -23,7 +23,7 @@ def parse_game_details(driver):
     game_dict = {}
     for game_day in game_days:
         game_list = []
-        game_date = game_day.find_element(By.XPATH, ".//header").text
+        game_date = game_day.find_element(By.XPATH, ".//header//h3").text
         games = game_day.find_elements(By.XPATH, "./div/section")
         for game in games:
             game_id = game.get_attribute("id")
